@@ -1,5 +1,6 @@
 import baselines.ProvableStrategy
 import game.BlindSnakeGame
+import strategy.BraidPrimeStrategy
 import strategy.PrimeStrategy
 
 /**
@@ -24,10 +25,16 @@ fun main(args: Array<String>) {
             println("Baseline demo finished. Won=$won")
         }
 
+        "demo-braid" -> {
+            val won = BraidPrimeStrategy.play(BlindSnakeGame { false }, maxAreaBound = 10)
+            println("Braid demo finished. Won=$won")
+        }
+
         else -> {
             println("Use one of:")
             println("  demo-prime")
             println("  demo-baseline")
+            println("  demo-braid")
             println()
             println("Verification utilities were moved to src/test/kotlin/verifier.")
             println("Run them from dedicated tests instead of Main.kt.")
