@@ -37,10 +37,12 @@ The baseline grows an area guess and tries structured sweep patterns under candi
 The verifier checks whether the deterministic walk covers every cell of a concrete board within a move budget. That is stronger than testing a single apple placement: if the walk covers the whole board, every apple position would be found.
 
 ## CLI
+The current `main` entry point supports offline checks for a single board:
 
-- `check <w> <h>` — inspect one board
-- `verify-selected` — run the smaller verifier suite
-- `verify-exhaustive` — run the heavy verifier suite
+```bash
+./gradlew run --args="check <strategy> <width> <height>"
+./gradlew run --args="check <strategy> <width> <height> <appleX> <appleY>"
+```
 
 ## Important caveat
 
