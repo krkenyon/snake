@@ -30,7 +30,7 @@ The purpose of the varying run lengths is to avoid bad resonance with the unknow
 
 ### Provable baseline
 
-The baseline grows an area guess and tries structured sweep patterns under candidate width and height assumptions. It is useful as a comparison point, but it is not intended as the final competitive answer.
+The baseline grows an area guess and tries structured sweep patterns under candidate width and height assumptions. It is useful as a comparison point, but it is not intended as the final strategy.
 
 ## Notes on verification
 
