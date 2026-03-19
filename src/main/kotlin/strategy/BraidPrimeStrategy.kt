@@ -10,12 +10,12 @@ import kotlin.math.min
  * For each active stride k, emit:
  *   RIGHT k
  *   DOWN 1
- *   RIGHT 1
+ *   RIGHT 2 (for asymmetry)
  *   DOWN k
  *
  * So across two stride lengths j and k the walk looks like:
- *   RIGHT j, DOWN, RIGHT, DOWN j,
- *   RIGHT k, DOWN, RIGHT, DOWN k, ...
+ *   RIGHT j, DOWN, RIGHT 2, DOWN j,
+ *   RIGHT k, DOWN, RIGHT 2, DOWN k, ...
  */
 object BraidPrimeStrategy : BlindSnakeSolver {
 
@@ -41,6 +41,11 @@ object BraidPrimeStrategy : BlindSnakeSolver {
 
                 if (movesMade >= maxMoves) return false
                 if (game.sendSignal(Command.DOWN)) return true
+                movesMade++
+                commandIndex++
+
+                if (movesMade >= maxMoves) return false
+                if (game.sendSignal(Command.RIGHT)) return true
                 movesMade++
                 commandIndex++
 
