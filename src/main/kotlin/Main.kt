@@ -1,5 +1,3 @@
-
-
 import verifier.ExhaustiveVerifier
 import verifier.PrimeBoardChecker
 import verifier.SelectedBoardVerifier
@@ -18,7 +16,7 @@ fun main(args: Array<String>) {
             }
 
             val area = w * h
-            val result = PrimeBoardChecker.checkBoard(w, h, 1000L * area)
+            val result = PrimeBoardChecker.checkBoard(w, h, 35L * area)
 
             println("Board: ${w}x$h")
             println("Area: $area")
@@ -27,6 +25,7 @@ fun main(args: Array<String>) {
             println("Success: ${result.success}")
             println("Ratio: ${"%.4f".format(result.stepsUsed.toDouble() / area)}")
         }
+
         else -> {
             println("Use one of:")
             println("  verify-exhaustive")
