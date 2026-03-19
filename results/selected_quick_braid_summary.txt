@@ -1,0 +1,5 @@
+Boards tested: 28145
+Failures: 1006
+Worst ratio: 34.715520
+Worst case board: 2940x196
+Steps used: 20004471
