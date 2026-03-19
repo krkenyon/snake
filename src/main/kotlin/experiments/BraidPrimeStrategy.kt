@@ -1,7 +1,10 @@
-package strategy
+package experiments
 
 import game.BlindSnakeGame
 import game.Command
+import strategy.BlindSnakeSolver
+import strategy.PrimeStrategy
+import kotlin.collections.plusAssign
 import kotlin.math.min
 
 /**

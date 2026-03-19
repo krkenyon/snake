@@ -3,7 +3,7 @@ package cli
 import baselines.ProvableStrategy
 import game.BlindSnakeGame
 import game.Command
-import strategy.BraidPrimeStrategy
+import experiments.BraidPrimeStrategy
 import strategy.PrimeStrategy
 
 object OfflineChecks {

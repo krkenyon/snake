@@ -1,7 +1,7 @@
 package verifier
 
 import org.junit.jupiter.api.Test
-import strategy.BraidPrimeStrategy
+import experiments.BraidPrimeStrategy
 import strategy.PrimeStrategy
 
 class BraidPrimeTest {
