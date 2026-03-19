@@ -18,15 +18,6 @@ import kotlin.math.sqrt
  *    an h-row board
  * 4. double G and repeat
  *
- * Why keep this in the repository:
- * - it is easier to reason about than the prime heuristic
- * - it provides a useful baseline for experiments
- * - it shows an alternative direction that favors structure over speed
- *
- * Why it is not the main approach:
- * - it spends too many moves because it repeatedly re-tests many guesses
- * - it does not target the 35 * S budget tightly enough to be a strong final
- *   answer for the interview brief
  */
 class ProvableStrategy : BlindSnakeSolver {
 
