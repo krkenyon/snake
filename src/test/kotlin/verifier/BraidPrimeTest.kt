@@ -2,6 +2,7 @@ package verifier
 
 import org.junit.jupiter.api.Test
 import strategy.BraidPrimeStrategy
+import strategy.PrimeStrategy
 
 class BraidPrimeTest {
 
@@ -15,5 +16,21 @@ class BraidPrimeTest {
         )
 
         println(result)
+    }
+
+    @Test
+    fun verifySelectedQuickBraid() {
+        SelectedBoardVerifier.verifyQuick(
+            runName = "selected_quick_braid",
+            generator = BraidPrimeStrategy::generateCommands
+        )
+    }
+
+    @Test
+    fun verifySelectedQuickPrime() {
+        SelectedBoardVerifier.verifyQuick(
+            runName = "selected_quick_prime",
+            generator = PrimeStrategy::generateCommands
+        )
     }
 }

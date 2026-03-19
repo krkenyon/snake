@@ -1,14 +1,20 @@
 package verifier
 
 import kotlin.random.Random
+import game.Command
+import strategy.PrimeStrategy
 
 /**
  * Smaller suite focused on representative and adversarial-looking boards.
  */
 object SelectedBoardVerifier {
 
-    fun verifyQuick(maxArea: Int = 1_000_000) {
-        runSuite("selected_quick", buildList {
+    fun verifyQuick(
+        runName: String = "selected_quick_prime",
+        generator: (Long) -> List<Command> = PrimeStrategy::generateCommands,
+        maxArea: Int = 1_000_000
+    ) {
+        runSuite(runName, buildList {
             for (s in 1..10_000) {
                 add(1 to s)
                 add(s to 1)
@@ -43,17 +49,21 @@ object SelectedBoardVerifier {
                     add(wRand to hRand)
                 }
             }
-        })
+        }, generator)
     }
 
-    private fun runSuite(runName: String, boards: List<Pair<Int, Int>>) {
+    private fun runSuite(
+        runName: String,
+        boards: List<Pair<Int, Int>>,
+        generator: (Long) -> List<Command>
+    ) {
         ResultWriter.clear(runName)
         ResultWriter.initCsv(runName, "width,height,area,success,coverage,stepsUsed,ratio")
 
         var total = 0
         var failures = 0
         var worstRatio = 0.0
-        var worstCase: PrimeBoardChecker.Result? = null
+        var worstCase: StrategyBoardChecker.Result? = null
 
         val seen = HashSet<Pair<Int, Int>>()
 
@@ -61,7 +71,12 @@ object SelectedBoardVerifier {
             if (!seen.add(w to h)) continue
 
             val area = w * h
-            val result = PrimeBoardChecker.checkBoard(w, h, 35L * area)
+            val result = StrategyBoardChecker.checkBoard(
+                width = w,
+                height = h,
+                maxSteps = 35L * area,
+                generator = generator
+            )
             total++
 
             val ratio = result.stepsUsed.toDouble() / area.toDouble()
