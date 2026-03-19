@@ -1,41 +1,60 @@
 package baselines
 
+import game.BlindSnakeGame
+import game.Command
+import strategy.BlindSnakeSolver
 import kotlin.math.sqrt
 
-class ProvableStrategy {
+/**
+ * Structured baseline intended as a comparison point, not as the main submission.
+ *
+ * This baseline grows an area guess and, for each guess, tries simple sweep
+ * patterns corresponding to candidate small dimensions. The high-level logic is:
+ *
+ * 1. guess an area bound G
+ * 2. for each candidate width w up to sqrt(G), run a row sweep shaped like a
+ *    w-column board
+ * 3. for each candidate height h up to sqrt(G), run a column sweep shaped like
+ *    an h-row board
+ * 4. double G and repeat
+ *
+ * Why keep this in the repository:
+ * - it is easier to reason about than the prime heuristic
+ * - it provides a useful baseline for experiments
+ * - it shows an alternative direction that favors structure over speed
+ *
+ * Why it is not the main approach:
+ * - it spends too many moves because it repeatedly re-tests many guesses
+ * - it does not target the 35 * S budget tightly enough to be a strong final
+ *   answer for the interview brief
+ */
+class ProvableStrategy : BlindSnakeSolver {
 
-    enum class Direction {
-        UP, DOWN, LEFT, RIGHT
-    }
-
-
-    fun playGame(sendSignal: (Direction) -> Boolean) {
+    override fun play(game: BlindSnakeGame): Boolean {
         var areaGuess = 1
 
         while (true) {
             val maxSmallDimension = sqrt(areaGuess.toDouble()).toInt()
 
-            // Try all possible widths
             for (w in 1..maxSmallDimension) {
-                val reps = (areaGuess + w - 1) / w
+                val repetitions = (areaGuess + w - 1) / w
 
-                repeat(reps) {
+                repeat(repetitions) {
                     repeat(w - 1) {
-                        if (sendSignal(Direction.RIGHT)) return
+                        if (game.sendSignal(Command.RIGHT)) return true
                     }
-                    if (sendSignal(Direction.DOWN)) return
+                    if (game.sendSignal(Command.DOWN)) return true
                 }
             }
 
-            // Try all possible heights
             for (h in 1..maxSmallDimension) {
-                val reps = (areaGuess + h - 1) / h
+                val repetitions = (areaGuess + h - 1) / h
 
-                repeat(reps) {
+                repeat(repetitions) {
                     repeat(h - 1) {
-                        if (sendSignal(Direction.DOWN)) return
+                        if (game.sendSignal(Command.DOWN)) return true
                     }
-                    if (sendSignal(Direction.RIGHT)) return
+                    if (game.sendSignal(Command.RIGHT)) return true
                 }
             }
 

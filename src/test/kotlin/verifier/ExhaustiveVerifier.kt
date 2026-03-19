@@ -1,5 +1,11 @@
 package verifier
 
+/**
+ * Heavy verification suite.
+ *
+ * This is intentionally test-side infrastructure rather than production code:
+ * it exists to evaluate strategies, not to solve the game at runtime.
+ */
 object ExhaustiveVerifier {
 
     fun verifyAll(maxArea: Int = 1_000_000) {

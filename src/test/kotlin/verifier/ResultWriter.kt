@@ -2,6 +2,12 @@ package verifier
 
 import java.io.File
 
+/**
+ * Writes verifier artifacts to the local results directory.
+ *
+ * Keeping this in test code avoids implying that result-file generation is part
+ * of the submission itself.
+ */
 object ResultWriter {
     private val resultsDir = File("results").apply { mkdirs() }
 

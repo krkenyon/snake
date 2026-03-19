@@ -1,36 +1,36 @@
-import verifier.ExhaustiveVerifier
-import verifier.PrimeBoardChecker
-import verifier.SelectedBoardVerifier
+import baselines.ProvableStrategy
+import game.BlindSnakeGame
+import strategy.PrimeStrategy
 
+/**
+ * Small command-line entry point for lightweight local demos.
+ *
+ * This file should stay focused on code that belongs to the actual solution:
+ * - wiring a strategy to the game-facing API
+ * - running tiny smoke tests with a stub game engine
+ *
+ * Offline verification, board checking, and result generation belong under
+ * src/test/kotlin and should be run from dedicated test runners instead.
+ */
 fun main(args: Array<String>) {
     when (args.getOrNull(0)) {
-        "verify-exhaustive" -> ExhaustiveVerifier.verifyAll()
-        "verify-selected" -> SelectedBoardVerifier.verifyQuick()
-        "check" -> {
-            val w = args.getOrNull(1)?.toIntOrNull()
-            val h = args.getOrNull(2)?.toIntOrNull()
+        "demo-prime" -> {
+            val won = PrimeStrategy.play(BlindSnakeGame { false }, maxAreaBound = 10)
+            println("Prime demo finished. Won=$won")
+        }
 
-            if (w == null || h == null) {
-                println("Usage: check <width> <height>")
-                return
-            }
-
-            val area = w * h
-            val result = PrimeBoardChecker.checkBoard(w, h, 35L * area)
-
-            println("Board: ${w}x$h")
-            println("Area: $area")
-            println("Visited: ${result.coverage}/$area")
-            println("Steps used: ${result.stepsUsed}")
-            println("Success: ${result.success}")
-            println("Ratio: ${"%.4f".format(result.stepsUsed.toDouble() / area)}")
+        "demo-baseline" -> {
+            val won = ProvableStrategy().play(BlindSnakeGame { false })
+            println("Baseline demo finished. Won=$won")
         }
 
         else -> {
             println("Use one of:")
-            println("  verify-exhaustive")
-            println("  verify-selected")
-            println("  check <width> <height>")
+            println("  demo-prime")
+            println("  demo-baseline")
+            println()
+            println("Verification utilities were moved to src/test/kotlin/verifier.")
+            println("Run them from dedicated tests instead of Main.kt.")
         }
     }
 }

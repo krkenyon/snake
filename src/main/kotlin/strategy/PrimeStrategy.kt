@@ -1,43 +1,49 @@
 package strategy
 
+import game.BlindSnakeGame
+import game.Command
 import kotlin.math.min
 
 /**
- * Prime-based blind search strategy for the torus snake problem.
+ * Practical blind-search heuristic for the toroidal snake problem.
  *
- * Idea:
- * - Repeatedly move RIGHT several times, then move DOWN once.
- * - The horizontal run lengths come from a growing prefix of a prime-like pool.
- * - On a torus, this creates changing horizontal offsets modulo the unknown width,
- *   which tends to avoid simple resonances from a fixed stride.
+ * Problem setting recap:
+ * - width A is unknown
+ * - height B is unknown
+ * - area S = A * B is unknown, but guaranteed to satisfy S < 1_000_000
+ * - the snake has no positional feedback
+ * - movement wraps around both dimensions
+ * - the only feedback is whether the current move has hit the apple
  *
- * This file is intended as the "practical heuristic" strategy.
- * It does not claim a formal worst-case proof by itself.
+ * Main idea:
+ * We keep repeating blocks of the form
  *
- * Usage:
- * - Call play(sendSignal, maxAreaBound = 1_000_000)
- * - sendSignal(command) must return true as soon as the apple is found.
+ *     RIGHT p times, then DOWN once
  *
- * Notes:
- * - The task limit is 35 * S moves where S is the unknown board area.
- * - Since S < 1_000_000, an absolute hard cap of 35_000_000 moves is always safe.
- * - If the apple is not found by then, this strategy gives up.
+ * where p comes from a changing pool of mostly prime run lengths.
+ *
+ * Why this is a plausible heuristic:
+ * - A fixed horizontal stride can resonate badly with an unknown board width.
+ * - Using many different run lengths keeps changing the horizontal offset modulo
+ *   the true width, so the walk is much less likely to get trapped in a tiny
+ *   repeating subset of cells.
+ * - Small values appear early, which helps on tiny boards and thin boards.
+ * - Larger values appear gradually, which increases mixing on wider boards.
+ *
+ * Important limitation:
+ * This is still a heuristic. It is designed to perform well empirically, but it
+ * does not currently come with a proof that every board is solved within 35 * S
+ * moves.
  */
-object PrimeStrategy {
-
-    enum class Command {
-        LEFT, RIGHT, UP, DOWN
-    }
+object PrimeStrategy : BlindSnakeSolver {
 
     /**
-     * Full pool used by the heuristic.
+     * Pool of candidate horizontal sweep lengths.
      *
-     * This intentionally mirrors the original experimental Python version,
-     * including repeated values and the initial 1.
-     * The important property here is not "strict primality",
-     * but having a varied set of horizontal run lengths.
+     * This intentionally mirrors the experimental sequence already used in the
+     * project so we keep continuity with prior verification runs.
      */
-    private val primesPool = intArrayOf(
+    private val stridePool = intArrayOf(
         1, 2, 3, 5, 7, 11, 13, 5, 17, 19, 23, 3, 29,
         31, 37, 41, 43, 47, 53, 59, 61, 67, 71,
         73, 79, 83, 89, 97, 101, 103, 107, 109, 113,
@@ -59,57 +65,55 @@ object PrimeStrategy {
         1069, 1087, 1091, 1093, 1097, 1103, 1109, 1117, 1123
     )
 
-    fun getPrimeAt(index: Int): Int = primesPool[index]
+    fun getStrideAt(index: Int): Int = stridePool[index]
 
     /**
-     * Heuristic controlling which prefix of the pool is currently active.
+     * Returns the currently active prefix of the stride pool.
      *
-     * For command index i:
-     * - always use the pool prefix [0 .. lastIndex]
-     * - let lastIndex grow slowly as i increases
-     *
-     * This means:
-     * - early game: shorter/smaller runs dominate
-     * - later game: a wider range of run lengths appears
+     * The prefix grows slowly with time:
+     * - early on we mostly use short runs
+     * - later on we admit a broader variety of run lengths
      */
-    fun getPrimesIndices(i: Long): IntRange {
-        val lastIndex = (i / 200_000L + 14L).toInt()
-        return 0..min(lastIndex, primesPool.lastIndex)
+    fun getStrideIndices(commandIndex: Long): IntRange {
+        val lastIndex = (commandIndex / 200_000L + 14L).toInt()
+        return 0..min(lastIndex, stridePool.lastIndex)
     }
 
     /**
-     * Plays the heuristic strategy directly against the game engine.
+     * Plays the heuristic using the absolute safe cap implied by the brief.
      *
-     * @param sendSignal function provided by the game engine.
-     *        Returns true immediately when the apple is found.
-     * @param maxAreaBound known upper bound on S = A * B from the task statement.
-     * @return true if the apple was found within the global safe cap, else false.
+     * Because S < 1_000_000, a universal cap of 35_000_000 moves can never
+     * exceed the allowed 35 * S limit for a legal board only if S were known to
+     * equal the maximum bound. In the actual contest setting, a submission would
+     * need a strategy-specific proof with respect to the *true* unknown S.
+     *
+     * In this repository the cap is used only for offline simulation and to keep
+     * the heuristic bounded during experiments.
      */
-    fun play(
-        sendSignal: (Command) -> Boolean,
-        maxAreaBound: Int = 1_000_000
-    ): Boolean {
+    override fun play(game: BlindSnakeGame): Boolean = play(game, maxAreaBound = 1_000_000)
+
+    fun play(game: BlindSnakeGame, maxAreaBound: Int = 1_000_000): Boolean {
         val maxMoves = 35L * maxAreaBound.toLong()
         var movesMade = 0L
-        var i = 1L
+        var commandIndex = 1L
 
         while (movesMade < maxMoves) {
-            val activeRange = getPrimesIndices(i)
+            val activeRange = getStrideIndices(commandIndex)
 
             for (idx in activeRange) {
-                val p = primesPool[idx]
+                val stride = stridePool[idx]
 
-                repeat(p) {
+                repeat(stride) {
                     if (movesMade >= maxMoves) return false
-                    if (sendSignal(Command.RIGHT)) return true
+                    if (game.sendSignal(Command.RIGHT)) return true
                     movesMade++
-                    i++
+                    commandIndex++
                 }
 
                 if (movesMade >= maxMoves) return false
-                if (sendSignal(Command.DOWN)) return true
+                if (game.sendSignal(Command.DOWN)) return true
                 movesMade++
-                i++
+                commandIndex++
             }
         }
 
@@ -117,31 +121,30 @@ object PrimeStrategy {
     }
 
     /**
-     * Generates the raw command sequence up to a fixed move budget.
-     * Useful for debugging, offline analysis, or a verifier.
+     * Deterministic command generator used by the offline verifiers.
      */
     fun generateCommands(maxMoves: Long = 35_000_000L): List<Command> {
         val commands = ArrayList<Command>(min(maxMoves, 1_000_000L).toInt())
         var movesMade = 0L
-        var i = 1L
+        var commandIndex = 1L
 
         while (movesMade < maxMoves) {
-            val activeRange = getPrimesIndices(i)
+            val activeRange = getStrideIndices(commandIndex)
 
             for (idx in activeRange) {
-                val p = primesPool[idx]
+                val stride = stridePool[idx]
 
-                repeat(p) {
+                repeat(stride) {
                     if (movesMade >= maxMoves) return commands
                     commands += Command.RIGHT
                     movesMade++
-                    i++
+                    commandIndex++
                 }
 
                 if (movesMade >= maxMoves) return commands
                 commands += Command.DOWN
                 movesMade++
-                i++
+                commandIndex++
             }
         }
 

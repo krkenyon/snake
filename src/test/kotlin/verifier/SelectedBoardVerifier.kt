@@ -2,17 +2,18 @@ package verifier
 
 import kotlin.random.Random
 
+/**
+ * Smaller suite focused on representative and adversarial-looking boards.
+ */
 object SelectedBoardVerifier {
 
     fun verifyQuick(maxArea: Int = 1_000_000) {
         runSuite("selected_quick", buildList {
-            // small degenerate boards
             for (s in 1..10_000) {
                 add(1 to s)
                 add(s to 1)
             }
 
-            // squares / near-squares
             var d = 1
             while (d.toLong() * d.toLong() <= maxArea.toLong()) {
                 add(d to d)
@@ -21,7 +22,6 @@ object SelectedBoardVerifier {
                 d++
             }
 
-            // powers of two
             var w = 1
             while (w <= maxArea) {
                 var h = 1
@@ -34,7 +34,6 @@ object SelectedBoardVerifier {
                 w *= 2
             }
 
-            // random boards
             val rng = Random(1)
             repeat(5000) {
                 val wRand = rng.nextInt(1, 5000)

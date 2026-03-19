@@ -2,6 +2,16 @@ package verifier
 
 import strategy.PrimeStrategy
 
+/**
+ * Offline simulator for a specific torus board.
+ *
+ * This does not know where the apple is. Instead, it asks a stronger question:
+ * "How many distinct cells does the strategy visit within a fixed step budget?"
+ *
+ * If the simulated walk covers every cell, then regardless of the unknown start
+ * cell and unknown apple cell, the strategy would eventually hit the apple on
+ * that board within the same number of moves.
+ */
 object PrimeBoardChecker {
 
     data class Result(
@@ -20,7 +30,7 @@ object PrimeBoardChecker {
         var visitedCount = 0
 
         var steps = 0L
-        var i = 1L
+        var commandIndex = 1L
 
         fun visit() {
             val idx = y * width + x
@@ -36,12 +46,12 @@ object PrimeBoardChecker {
         }
 
         while (steps < maxSteps) {
-            val range = PrimeStrategy.getPrimesIndices(i)
+            val range = PrimeStrategy.getStrideIndices(commandIndex)
 
             for (idx in range) {
-                val p = PrimeStrategy.getPrimeAt(idx)
+                val stride = PrimeStrategy.getStrideAt(idx)
 
-                repeat(p) {
+                repeat(stride) {
                     if (steps >= maxSteps) {
                         return Result(width, height, false, steps, visitedCount)
                     }
@@ -49,7 +59,7 @@ object PrimeBoardChecker {
                     x = (x + 1) % width
                     visit()
                     steps++
-                    i++
+                    commandIndex++
 
                     if (visitedCount == width * height) {
                         return Result(width, height, true, steps, visitedCount)
@@ -63,7 +73,7 @@ object PrimeBoardChecker {
                 y = (y + 1) % height
                 visit()
                 steps++
-                i++
+                commandIndex++
 
                 if (visitedCount == width * height) {
                     return Result(width, height, true, steps, visitedCount)
@@ -71,12 +81,6 @@ object PrimeBoardChecker {
             }
         }
 
-        return Result(
-            width = width,
-            height = height,
-            success = visitedCount == width * height,
-            stepsUsed = steps,
-            coverage = visitedCount
-        )
+        return Result(width, height, visitedCount == width * height, steps, visitedCount)
     }
 }
