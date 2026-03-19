@@ -100,7 +100,7 @@ The stride sequence is designed to:
 
 - No formal guarantee of finishing within 35·S for all boards
 - Performs worse on:
-    - very tall, narrow grids
+    - very tall, narrow grids (see braid strategy below)
     - adversarial dimensions where stride interactions are unfavorable
 - Performance depends on quality of stride sequence
 
@@ -121,3 +121,41 @@ This strategy transforms the blind search problem into a sequence of structured 
 By continuously changing the stride length, it avoids resonance with the unknown grid width and promotes full coverage of the toroidal space.
 
 While not formally bounded by 35·S in all cases, it performs effectively across a wide range of board configurations and represents a strong practical solution.
+
+# Braid Strategy
+
+## Addressing Directional Bias (Experimental)
+
+The prime strategy is horizontally biased:
+- Long horizontal runs
+- Minimal vertical movement (1 step)
+
+To address this, an alternative “braid-style” traversal was explored.
+
+### Idea
+
+Instead of:
+- right p steps → down 1
+
+We interleave both dimensions:
+
+- right p₁ steps → down 1
+- right 1 steps → down p₁
+- right p₂ steps → down 1
+- right 1 steps → down p₂ steps
+
+This creates a more symmetric exploration pattern.
+
+This initially performed badly on exactly square patterns so an extra right step was added to try and create asymmetry however no significant improvement was found
+
+### Motivation
+
+- Reduce directional bias
+- Improve performance on near vertical boards
+- Increase mixing across both axes
+
+### Status
+
+This approach is still experimental and was not included in the final submission due to:
+- incomplete validation
+- lack of consistent improvement across all board shapes
