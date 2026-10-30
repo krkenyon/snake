@@ -43,7 +43,3 @@ The current `main` entry point supports offline checks for a single board:
 ./gradlew run --args="check <strategy> <width> <height>"
 ./gradlew run --args="check <strategy> <width> <height> <appleX> <appleY>"
 ```
-
-## Important caveat
-
-The repository currently contains one practical heuristic and one structured baseline. The heuristic is the main candidate, but it is not presented as a complete proof of a universal `35 * S` bound.
